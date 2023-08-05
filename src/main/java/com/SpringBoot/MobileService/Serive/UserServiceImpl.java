@@ -20,6 +20,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO createUser(UserDTO userDTO) {
 
+        //first check whether email is present or not
+        UserEntity userFind = userRepository.findByEmail(userDTO.getEmail());
+
+        if (userFind != null) {
+            throw new RuntimeException("User is Present");
+        }
+
         //copy userDTo to userEntity
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(userDTO, userEntity);
@@ -27,15 +34,14 @@ public class UserServiceImpl implements UserService {
         //this below two filed need to be generated ..right noe giving hard coded values
         userEntity.setEncryptedPassword("Test");
         userEntity.setUserId("TestUserId");
-         //saving values
+        //saving values
         UserEntity storedUser = userRepository.save(userEntity);
 
         //now we have to copy back to userDTo as return type is userDTO
-        UserDTO returnValue=new UserDTO();
-        BeanUtils.copyProperties(storedUser,returnValue);
+        UserDTO returnValue = new UserDTO();
+        BeanUtils.copyProperties(storedUser, returnValue);
 
         return returnValue;
-
 
 
     }
