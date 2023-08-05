@@ -1,5 +1,8 @@
 package com.SpringBoot.MobileService.Secuirty;
 
+import com.SpringBoot.MobileService.Serive.UserService;
+import com.SpringBoot.MobileService.Share.dto.UserDTO;
+import com.SpringBoot.MobileService.SpringApplicationContent;
 import com.SpringBoot.MobileService.model.UserLoginRequestModel;
 import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -32,26 +35,29 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         try {
-            UserLoginRequestModel creds= new ObjectMapper().readValue(request.getInputStream(),UserLoginRequestModel.class);
-            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(creds.getEmail(),creds.getPassword(),new ArrayList<>()));
+            UserLoginRequestModel creds = new ObjectMapper().readValue(request.getInputStream(), UserLoginRequestModel.class);
+            return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(creds.getEmail(), creds.getPassword(), new ArrayList<>()));
 
-        }
-         catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-     String userName = ((User) authResult.getPrincipal()).getUsername();
+        String userName = ((User) authResult.getPrincipal()).getUsername();
 
         try {
             String token = Jwts.builder()
                     .setSubject(userName)
-                    .setExpiration(new Date(System.currentTimeMillis()+ SecurityConstance.EXPIRATION_TIME))
-                    .signWith(SignatureAlgorithm.HS512,SecurityConstance.TOKEN_SECRETE)
+                    .setExpiration(new Date(System.currentTimeMillis() + SecurityConstance.EXPIRATION_TIME))
+                    .signWith(SignatureAlgorithm.HS512, SecurityConstance.TOKEN_SECRETE)
                     .compact();
-            response.addHeader(SecurityConstance.HEADER_STRING,SecurityConstance.TOKEN_PREFIX);
+            UserService userService = (UserService) SpringApplicationContent.getBean("userServiceImpl");
+
+            UserDTO userDTO = userService.getUser(userName);
+            response.addHeader(SecurityConstance.HEADER_STRING, SecurityConstance.TOKEN_PREFIX);
+            response.addHeader("UserId",userDTO.getUserId());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -17,4 +17,8 @@ public class MobileServiceApplication {
 
 		return new BCryptPasswordEncoder();
 	}
+	@Bean
+	public SpringApplicationContent springApplicationContent(){
+		return new SpringApplicationContent();
+	}
 }
