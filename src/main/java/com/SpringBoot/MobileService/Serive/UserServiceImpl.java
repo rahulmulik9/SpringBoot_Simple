@@ -6,6 +6,9 @@ import com.SpringBoot.MobileService.Share.dto.UserDTO;
 import com.SpringBoot.MobileService.Share.dto.UsersUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +20,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UsersUtils usersUtils;
 
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -24,34 +30,36 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO createUser(UserDTO userDTO) {
 
-        //first check whether email is present or not
+        // 1] first check whether email is present or not
         UserEntity userFind = userRepository.findByEmail(userDTO.getEmail());
-
         if (userFind != null) {
             throw new RuntimeException("User is Present");
         }
+
         //generate random userId
         String randomUserID = usersUtils.generateUserId(30);
 
-        //copy userDTo to userEntity
+        //2] copy userDTo to userEntity
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(userDTO, userEntity);
 
         //adding userID to entity class
         userEntity.setUserId(randomUserID);
+        userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(userDTO.getPassword()));
 
-        //this below two filed need to be generated ..right noe giving hard coded values
-        userEntity.setEncryptedPassword("Test");
-
-        //saving values
+        //3] saving values
         UserEntity storedUser = userRepository.save(userEntity);
 
-        //now we have to copy back to userDTo as return type is userDTO
+        //4] now we have to copy back to userDTo as return type is userDTO
         UserDTO returnValue = new UserDTO();
         BeanUtils.copyProperties(storedUser, returnValue);
 
         return returnValue;
 
+    }
 
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return null;
     }
 }
