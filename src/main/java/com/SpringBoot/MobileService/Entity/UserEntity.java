@@ -25,7 +25,11 @@ public class UserEntity implements Serializable {
     @Column(nullable = false, length = 50)
     private String lastName;
 
-    @Column(nullable = false, length = 120)
+    //you can use here like this  nullable = false, length = 120,unique = true
+    //so this unique check if email is present or not.It will throw error...
+    //this error cant be handle
+    //so better to check at in method so we can handle exception
+    @Column(nullable = false, length = 120,unique = true)
     private String email;
 
     @Column(nullable = false)
