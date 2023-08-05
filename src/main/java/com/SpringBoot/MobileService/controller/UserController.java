@@ -13,19 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("users")
 public class UserController {
     @Autowired
-    UserServiceImpl UserServiceImpl;
+    UserServiceImpl userServiceImpl;
 
     public UserController(com.SpringBoot.MobileService.Serive.UserServiceImpl userServiceImpl) {
-        UserServiceImpl = userServiceImpl;
+         userServiceImpl = userServiceImpl;
     }
 
-    @GetMapping
-    public String getUser(){
-        return "Rahul get";
-    }
     @PostMapping
     public UserRest createUser(@RequestBody UserRequestDetails user){
-       // return new UserResponseDetails("FE@#","Rahul","Mulik","rahul@gmail.com");
+        // return new UserResponseDetails("FE@#","Rahul","Mulik","rahul@gmail.com");
 
         UserRest userReturn = new UserRest();
         //create object of DTO class then copy incoming data of UserRequestDetails (user) to that class object userReturn
@@ -34,11 +30,23 @@ public class UserController {
 
 
         //the value which coming from service class has been store into again DTO class then copy this to UserRest which is used as User response
-        UserDTO createduser = UserServiceImpl.createUser(userDTO);
+        UserDTO createduser = userServiceImpl.createUser(userDTO);
         BeanUtils.copyProperties(createduser,userReturn);
         return userReturn;
 
     }
+
+
+    @GetMapping(path="/{id}")
+    public String getUser(@PathVariable String id){
+        UserRest userReturn = new UserRest();
+       UserDTO userDTO  = userServiceImpl.getUserById(id);
+
+       BeanUtils.copyProperties(userDTO,userReturn);
+
+        return "Rahul get";
+    }
+
     @PutMapping
     public String uploadUser(){
         return "Rahul uploaded";
